@@ -10,6 +10,48 @@ class TreeNode {
 class AVLTree {
   constructor() {
     this.root = null;
+    this.totalSum = 0;
+    this.totalNodes = 0;
+  }
+
+  inOrder(node) {
+    if (node !== null) {
+      this.inOrder(node.left);
+      const balance = this.getBalance(node);
+      const violation = Math.abs(balance) > 1 ? " (AVL violation!)" : "";
+      console.log(`bal(${node.key}) = ${balance}${violation}`);
+      this.totalSum += node.key;
+      this.totalNodes++;
+      this.inOrder(node.right);
+    }
+  }
+
+  findMin(node) {
+    if (!node) return Infinity;
+    let minLeft = this.findMin(node.left);
+    let minRight = this.findMin(node.right);
+    return Math.min(node.key, minLeft, minRight);
+  }
+
+  findMax(node) {
+    if (!node) return -Infinity;
+    let maxLeft = this.findMax(node.left);
+    let maxRight = this.findMax(node.right);
+    return Math.max(node.key, maxLeft, maxRight);
+  }
+
+  calculateAverage() {
+    return this.totalNodes > 0
+      ? (this.totalSum / this.totalNodes).toFixed(1)
+      : 0;
+  }
+
+  checkAVL(node) {
+    if (!node) return true;
+    let leftAVL = this.checkAVL(node.left);
+    let rightAVL = this.checkAVL(node.right);
+    let isBalanced = Math.abs(this.getBalance(node)) <= 1;
+    return leftAVL && rightAVL && isBalanced;
   }
 
   getHeight(node) {
@@ -24,6 +66,8 @@ class AVLTree {
 
   rotateRight(y) {
     let x = y.left;
+    if (!x) return y; // Sicherstellen, dass x nicht null ist
+
     let T2 = x.right;
 
     x.right = y;
@@ -37,6 +81,8 @@ class AVLTree {
 
   rotateLeft(x) {
     let y = x.right;
+    if (!y) return x; // Sicherstellen, dass y nicht null ist
+
     let T2 = y.left;
 
     y.left = x;
@@ -50,38 +96,50 @@ class AVLTree {
 
   insert(node, key) {
     if (!node) {
-      console.log(`Einfügen des Knotens mit Schlüssel: ${key}`);
       return new TreeNode(key);
     }
 
     if (key < node.key) {
-      console.log(`Gehe links, um ${key} einzufügen`);
       node.left = this.insert(node.left, key);
     } else if (key > node.key) {
-      console.log(`Gehe rechts, um ${key} einzufügen`);
       node.right = this.insert(node.right, key);
     } else {
-      console.log(`Schlüssel ${key} existiert bereits. Überspringe Einfügen.`);
-      return node; // Doppelte Schlüssel nicht erlaubt
+      return node; // Vermeidung von Duplikaten
     }
 
+    // Aktualisiere die Höhe des aktuellen Knotens
     node.height =
       1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
+
+    // Balance-Faktor berechnen
     let balance = this.getBalance(node);
 
-    console.log(`Balance nach Einfügen von ${key}: ${balance}`);
-
-    if (balance > 1 || balance < -1) {
-      console.log(
-        `Rotation erforderlich bei Knoten ${node.key} mit Balance ${balance}`
-      );
+    // Rotationen durchführen, falls nötig
+    if (balance > 1 && key < node.right.key) {
+      return this.rotateLeft(node);
+    }
+    if (balance < -1 && key > node.left.key) {
+      return this.rotateRight(node);
+    }
+    if (balance > 1 && key > node.right.key) {
+      node.right = this.rotateRight(node.right);
+      return this.rotateLeft(node);
+    }
+    if (balance < -1 && key < node.left.key) {
+      node.left = this.rotateLeft(node.left);
+      return this.rotateRight(node);
     }
 
-    // Füge hier spezifische Logs für jede Rotation ein
-    // Beispiel für eine Rotation:
-    if (balance > 1 && key > node.right.key) {
-      console.log(`Linke Rotation um Knoten ${node.key}`);
-      return this.rotateLeft(node);
+    return node;
+  }
+
+  printFinalBalances(node) {
+    if (node !== null) {
+      this.printFinalBalances(node.left);
+      const balance = this.getBalance(node);
+      const violation = Math.abs(balance) > 1 ? " (AVL violation!)" : "";
+      console.log(`bal(${node.key}) = ${balance}${violation}`);
+      this.printFinalBalances(node.right);
     }
   }
 }
