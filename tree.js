@@ -14,18 +14,6 @@ class AVLTree {
     this.totalNodes = 0;
   }
 
-  inOrder(node) {
-    if (node !== null) {
-      this.inOrder(node.left);
-      const balance = this.getBalance(node);
-      const violation = Math.abs(balance) > 1 ? " (AVL violation!)" : "";
-      console.log(`bal(${node.key}) = ${balance}${violation}`);
-      this.totalSum += node.key;
-      this.totalNodes++;
-      this.inOrder(node.right);
-    }
-  }
-
   findMin(node) {
     if (!node) return Infinity;
     let minLeft = this.findMin(node.left);
@@ -110,47 +98,6 @@ class AVLTree {
     // Aktualisiere die Höhe des aktuellen Knotens
     node.height =
       1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
-
-    // Balance-Faktor berechnen
-    //let balance = this.getBalance(node);
-
-    // Rotationen durchführen, falls nötig
-    /*if (balance > 1 && key < node.right.key) {
-              return this.rotateLeft(node);
-          }
-          if (balance < -1 && key > node.left.key) {
-              return this.rotateRight(node);
-          }
-          if (balance > 1 && key > node.right.key) {
-              node.right = this.rotateRight(node.right);
-              return this.rotateLeft(node);
-          }
-          if (balance < -1 && key < node.left.key) {
-              node.left = this.rotateLeft(node.left);
-              return this.rotateRight(node);
-          }*/
-
-    return node;
-  }
-
-  rotateTree(node, key) {
-    let balance = this.getBalance(node);
-
-    // Rotationen durchführen, falls nötig
-    if (balance > 1 && key < node.right.key) {
-      return this.rotateLeft(node);
-    }
-    if (balance < -1 && key > node.left.key) {
-      return this.rotateRight(node);
-    }
-    if (balance > 1 && key > node.right.key) {
-      node.right = this.rotateRight(node.right);
-      return this.rotateLeft(node);
-    }
-    if (balance < -1 && key < node.left.key) {
-      node.left = this.rotateLeft(node.left);
-      return this.rotateRight(node);
-    }
 
     return node;
   }
