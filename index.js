@@ -1,37 +1,49 @@
 const fs = require("fs");
 const AVLTree = require("./tree");
 
-const tree = new AVLTree();
-
-// Einlesen der Schlüssel aus der Datei und Einfügen in den AVL-Baum
-const keys = fs
-    .readFileSync("second.txt", "utf-8")
-    .trim()
-    .split("\n")
-    .map(Number);
-keys.forEach((key) => {
-    tree.root = tree.insert(tree.root, key);
-});
-
-// Finalen Balance-Status des Baumes ausgeben
-tree.printFinalBalances(tree.root);
-
-// Überprüfen, ob der Baum den AVL-Kriterien entspricht
-const isAVL = tree.checkAVL(tree.root);
-console.log(`AVL: ${isAVL ? "yes" : "no"}`);
-
-// Minimale, maximale und durchschnittliche Schlüsselwerte berechnen und ausgeben
-const min = tree.findMin(tree.root);
-const max = tree.findMax(tree.root);
-const avg = tree.calculateAverage();
-console.log(`min: ${min}, max: ${max}, avg: ${avg}`);
-/*console.log(`Test`);
-keys.forEach((key) => {
-    tree.root = tree.rotateTree(tree.root, key);
-});
-tree.printFinalBalances(tree.root);*/
-console.log(`Test`);
-if (isAVL == true) {
-    tree.startSearch(tree.root, 3);
+function readTreeFromFile(filepath) {
+  return fs.readFileSync(filepath, "utf-8").trim().split("\n").map(Number);
 }
-console.log(`Finished`);
+
+function buildSubtreeFromKeys(keys) {
+  const subtree = new AVLTree();
+  keys.forEach((key) => {
+    subtree.root = subtree.insert(subtree.root, key);
+  });
+  return subtree;
+}
+
+// Verarbeitung der Kommandozeilenargumente
+const [searchTreeFile, subtreeFile] = process.argv.slice(2);
+const searchTreeKeys = readTreeFromFile(searchTreeFile);
+const subtreeKeys = readTreeFromFile(subtreeFile);
+
+// Aufbau des Suchbaumes
+const searchTree = new AVLTree();
+searchTreeKeys.forEach((key) => {
+  searchTree.root = searchTree.insert(searchTree.root, key);
+});
+
+// Balance-Informationen und Statistiken ausgeben
+searchTree.printFinalBalances(searchTree.root);
+const isAVL = searchTree.checkAVL(searchTree.root);
+console.log(`AVL: ${isAVL ? "yes" : "no"}`);
+const min = searchTree.findMin(searchTree.root);
+const max = searchTree.findMax(searchTree.root);
+const avg = searchTree.calculateAverage();
+console.log(`min: ${min}, max: ${max}, avg: ${avg}`);
+
+// Einfache Suche oder Suche nach einem Subtree
+if (subtreeKeys.length === 1) {
+  const key = subtreeKeys[0];
+  const path = searchTree.findValuePath(searchTree.root, key);
+  if (path.length > 0) {
+    console.log(`${key} found ${path.join(", ")}`);
+  } else {
+    console.log(`${key} not found!`);
+  }
+} else {
+  const subtree = buildSubtreeFromKeys(subtreeKeys);
+  const isSubtreeFound = searchTree.findSubtree(searchTree.root, subtree.root);
+  console.log(isSubtreeFound ? "Subtree found" : "Subtree not found!");
+}
